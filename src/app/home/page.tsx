@@ -62,7 +62,7 @@ export default function HomePage() {
           <h2 className="text-lg font-semibold mb-2">Current Pool Chemical Levels</h2>
           {chemicalFields.map(({ key, label, min, max, step }) => (
             <div key={key}>
-              <label className="mr-2">{label}:</label>
+              <label className="mr-2">{label}: {currentTouched[key as keyof typeof currentTouched] ? current[key as keyof typeof current] : <span className="text-gray-400">--</span>}</label>
               {key === 'chlorine' ? (
                 <>
                   <input
@@ -78,12 +78,8 @@ export default function HomePage() {
                       setCurrentTouched({ ...currentTouched, chlorine: true });
                     }}
                     style={{ opacity: currentTouched.chlorine ? 1 : 0.5 }}
-                    className="w-full h-8 accent-blue-500 slider-thumb-lg slider-track-lg value-inside-thumb"
-                    data-value={currentTouched.chlorine ? current.chlorine : '--'}
+                    className="w-full h-8 accent-blue-500 slider-thumb-lg slider-track-lg"
                   />
-                  <span className="ml-2">
-                    {currentTouched.chlorine ? current.chlorine : <span className="text-gray-400">--</span>}
-                  </span>
                   <div className="flex justify-between text-xs text-gray-500 mt-1">
                     <span>{chlorineSteps[0]}</span>
                     <span>{chlorineSteps[Math.floor(chlorineSteps.length/2)]}</span>
@@ -102,19 +98,12 @@ export default function HomePage() {
                     onChange={handleCurrentChange}
                     style={{ opacity: currentTouched[key as keyof typeof currentTouched] ? 1 : 0.5 }}
                     className="w-full h-8 accent-blue-500 slider-thumb-lg slider-track-lg value-inside-thumb"
-                    data-value={currentTouched[key as keyof typeof currentTouched] ? current[key as keyof typeof current] : '--'}
                   />
-                  <span className="ml-2">
-                    {currentTouched[key as keyof typeof currentTouched] ? current[key as keyof typeof current] : <span className="text-gray-400">--</span>}
-                  </span>
                   <div className="flex justify-between text-xs text-gray-500 mt-1">
                     <span>{min}</span>
                     <span>{Math.round((min + max) / 2)}</span>
                     <span>{max}</span>
                   </div>
-                  <span className="ml-2">
-                    {currentTouched[key as keyof typeof currentTouched] ? current[key as keyof typeof current] : <span className="text-gray-400">--</span>}
-                  </span>
                 </>
               )}
             </div>
@@ -125,7 +114,7 @@ export default function HomePage() {
           <h2 className="text-lg font-semibold mb-2">Ideal Chemical Levels</h2>
           {chemicalFields.map(({ key, label, min, max, step }) => (
             <div key={key}>
-              <label className="mr-2">{label}:</label>
+                <label className="mr-2">{label}: {ideal[key as keyof typeof ideal]}</label>
               {key === 'chlorine' ? (
                 <>
                   <input
@@ -148,7 +137,6 @@ export default function HomePage() {
                     <span>{chlorineSteps[Math.floor(chlorineSteps.length/2)]}</span>
                     <span>{chlorineSteps[chlorineSteps.length-1]}</span>
                   </div>
-                  <span className="ml-2">{ideal.chlorine}</span>
                 </>
               ) : (
                 <>
@@ -168,9 +156,8 @@ export default function HomePage() {
                     <span>{Math.round((min + max) / 2)}</span>
                     <span>{max}</span>
                   </div>
-                </>
+                  </>
               )}
-              {key !== 'chlorine' && <span className="ml-2">{ideal[key as keyof typeof ideal]}</span>}
             </div>
           ))}
         </form>
@@ -196,12 +183,14 @@ export default function HomePage() {
       </div>
       <style jsx global>{`
         input[type='range'].slider-thumb-lg::-webkit-slider-thumb {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          background: #3b82f6;
-          cursor: pointer;
-          position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            position: relative;
+            /* Center thumb vertically in Safari */
+            transform: translateY(-16px);
         }
         input[type='range'].slider-thumb-lg::-webkit-slider-thumb::after {
           content: attr(data-value);
