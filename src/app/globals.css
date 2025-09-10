@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #c0f1ff;
   --foreground: #171717;
 }
 
@@ -12,15 +12,27 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* 
+I'M SO SO SORYY DARK MODE USERS
+I HAVE FAILED YOU
+I WILL MAKE IT UP TO YOU SOMEDAY
+
+I PROMISE
+
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #b8b8b8;
     --foreground: #ededed;
   }
-}
+} */
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: bold;
 }
