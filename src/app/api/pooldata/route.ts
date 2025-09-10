@@ -13,7 +13,7 @@ export async function POST(request: Request) {
 //   const { pool } = await request.json();
   const cookieStore = await cookies();
   const existing = cookieStore.get('PoolData')?.value;
-  let pools = existing ? JSON.parse(existing) : [];
+  const pools = existing ? JSON.parse(existing) : [];
   pools.push(pool);
   const response = NextResponse.json({ success: true, pools });
   response.cookies.set('PoolData', JSON.stringify(pools), { path: '/' });
