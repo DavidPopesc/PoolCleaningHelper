@@ -10,7 +10,7 @@ export async function GET() {
 
 // POST: Store pool data in cookie
 export async function POST(request: Request) {
-//   const { pool } = await request.json();
+  const { pool } = await request.json(); //
   const cookieStore = await cookies();
   const existing = cookieStore.get('PoolData')?.value;
   const pools = existing ? JSON.parse(existing) : [];
