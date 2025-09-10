@@ -1,5 +1,15 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+// Helper to calculate gallons
+function calculateGallons(pool: any) {
+  const length = Number(pool.length) || 0;
+  const width = Number(pool.width) || 0;
+  const shallow = Number(pool.shallow) || 0;
+  const deep = Number(pool.deep) || 0;
+  // Simple average depth formula
+  const avgDepth = (shallow + deep) / 2;
+  return Math.round(length * width * avgDepth * 7.48); // 7.48 gallons per cubic foot
+}
 
 
 const chlorineSteps = [0, 1, 2, 3, 5, 7.5, 10];
@@ -42,6 +52,20 @@ export default function HomePage() {
     CYA: false,
     salt: false,
   });
+  const [pools, setPools] = useState<any[]>([]);
+  const [selectedPoolIdx, setSelectedPoolIdx] = useState<number | null>(null);
+  const [showAddPool, setShowAddPool] = useState(false);
+  const [editIdx, setEditIdx] = useState<number | null>(null);
+
+  // Fetch pools from cookie
+  useEffect(() => {
+    async function fetchPools() {
+      const res = await fetch('/api/pooldata');
+      const data = await res.json();
+      setPools(data.poolData || []);
+    }
+    fetchPools();
+  }, []);
 
   function handleIdealChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = e.target;
@@ -54,10 +78,131 @@ export default function HomePage() {
     setCurrentTouched({ ...currentTouched, [name]: true });
   }
 
+  // Add/Edit/Delete pool handlers
+  async function handleDeletePool(idx: number) {
+    const newPools = pools.filter((_, i) => i !== idx);
+    await fetch('/api/pooldata', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pool: null, pools: newPools }),
+    });
+    setPools(newPools);
+    if (selectedPoolIdx === idx) setSelectedPoolIdx(null);
+  }
+
+  // For demo: Add/Edit pool UI is basic
+  function PoolForm({ onSave, initial }: { onSave: (pool: any) => void; initial?: any }) {
+    const [form, setForm] = useState(initial || { name: '', length: '', width: '', shallow: '', deep: '' });
+    return (
+      <div className="p-4 border rounded bg-white shadow-md">
+        <h3 className="font-bold mb-2">{initial ? 'Edit Pool' : 'Add New Pool'}</h3>
+        <div className="space-y-2">
+          <input className="border p-1 w-full" placeholder="Name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+          <input className="border p-1 w-full" placeholder="Length (ft)" value={form.length} onChange={e => setForm({ ...form, length: e.target.value })} />
+          <input className="border p-1 w-full" placeholder="Width (ft)" value={form.width} onChange={e => setForm({ ...form, width: e.target.value })} />
+          <input className="border p-1 w-full" placeholder="Shallow Depth (ft)" value={form.shallow} onChange={e => setForm({ ...form, shallow: e.target.value })} />
+          <input className="border p-1 w-full" placeholder="Deep Depth (ft)" value={form.deep} onChange={e => setForm({ ...form, deep: e.target.value })} />
+          <button className="bg-blue-500 text-white px-3 py-1 rounded" onClick={() => onSave(form)}>{initial ? 'Save' : 'Add'}</button>
+        </div>
+      </div>
+    );
+  }
+
+  async function handleAddPool(pool: any) {
+    const newPools = [...pools, pool];
+    await fetch('/api/pooldata', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pool }),
+    });
+    setPools(newPools);
+    setShowAddPool(false);
+  }
+
+  async function handleEditPool(pool: any) {
+    if (editIdx === null) return;
+    const newPools = pools.map((p, i) => (i === editIdx ? pool : p));
+    await fetch('/api/pooldata', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pool: null, pools: newPools }),
+    });
+    setPools(newPools);
+    setEditIdx(null);
+  }
+
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen">
-      <h1 className="text-2xl font-bold mb-4">Pool Chemical Calculator</h1>
-  <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-8">
+    <main className="flex flex-col items-center justify-center min-h-screen bg-blue-100">
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">Pool Chemical Calculator</h1>
+      {/* Pool Selector Dropdown */}
+      <div className="mb-8 w-full max-w-xl mx-auto">
+        <div className="flex items-center gap-4">
+          <select
+            className="border border-blue-300 bg-white text-gray-700 px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition w-full"
+            value={selectedPoolIdx ?? ''}
+            onChange={e => setSelectedPoolIdx(e.target.value === '' ? null : Number(e.target.value))}
+          >
+            <option value="">Select a pool...</option>
+            {pools.map((pool, idx) => (
+              pool && pool.name ? (
+                <option key={idx} value={idx}>
+                  {pool.name}, {calculateGallons(pool)} gallons
+                </option>
+              ) : null
+            ))}
+          </select>
+        </div>
+        {/* Centered icon actions below dropdown */}
+        <div className="flex justify-center gap-8 mt-4">
+          <button
+            aria-label="Add Pool"
+            className="bg-green-500 hover:bg-green-600 text-white rounded-full p-2 shadow flex items-center justify-center"
+            onClick={() => setShowAddPool(true)}
+            style={{ width: 44, height: 44 }}
+          >
+            {/* Plus icon */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+          </button>
+          <button
+            aria-label="Edit Pool"
+            className={`bg-yellow-400 hover:bg-yellow-500 text-white rounded-full p-2 shadow flex items-center justify-center${selectedPoolIdx === null ? ' opacity-50 cursor-not-allowed' : ''}`}
+            onClick={() => selectedPoolIdx !== null && setEditIdx(selectedPoolIdx)}
+            disabled={selectedPoolIdx === null}
+            style={{ width: 44, height: 44 }}
+          >
+            {/* Pencil icon */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.661,19.113,3,21l1.887-5.661ZM20.386,7.388a2.1,2.1,0,0,0,0-2.965l-.809-.809a2.1,2.1,0,0,0-2.965,0L6.571,13.655l3.774,3.774Z" /></svg>
+          </button>
+          <button
+            aria-label="Delete Pool"
+            className={`bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow flex items-center justify-center${selectedPoolIdx === null ? ' opacity-50 cursor-not-allowed' : ''}`}
+            onClick={() => selectedPoolIdx !== null && handleDeletePool(selectedPoolIdx)}
+            disabled={selectedPoolIdx === null}
+            style={{ width: 44, height: 44 }}
+          >
+            {/* Trash icon */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.5,4H16.86l-.69-2.06A1.37,1.37,0,0,0,14.87,1H10.13a1.37,1.37,0,0,0-1.3.94L8.14,4H4.5a.5.5,0,0,0,0,1h.34l1,17.59A1.45,1.45,0,0,0,7.2,24H17.8a1.45,1.45,0,0,0,1.41-1.41L20.16,5h.34a.5.5,0,0,0,0-1ZM9.77,2.26A.38.38,0,0,1,10.13,2h4.74a.38.38,0,0,1,.36.26L15.81,4H9.19Zm8.44,20.27a.45.45,0,0,1-.41.47H7.2a.45.45,0,0,1-.41-.47L5.84,5H19.16Z" /></svg>
+          </button>
+        </div>
+        {/* Add/Edit Pool Modal */}
+        {showAddPool && (
+          <div className="fixed inset-0 flex items-center justify-center z-50">
+            <div className="relative rounded-lg p-6 w-full max-w-md mx-auto">
+              <PoolForm onSave={handleAddPool} />
+              <button className="absolute top-3 left-3 bg-red-200 px-3 py-1 rounded-lg shadow" onClick={() => setShowAddPool(false)}>Close</button>
+            </div>
+          </div>
+        )}
+        {editIdx !== null && (
+          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+            <div className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
+              <PoolForm initial={pools[editIdx]} onSave={handleEditPool} />
+              <button className="absolute top-4 right-4 bg-gray-200 px-3 py-2 rounded-lg shadow" onClick={() => setEditIdx(null)}>Close</button>
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-8">
   <form className="space-y-4 p-4 border rounded bg-white/80 max-w-md mx-auto">
           <h2 className="text-lg font-semibold mb-2">Current Pool Chemical Levels</h2>
           {chemicalFields.map(({ key, label, min, max, step }) => (
