@@ -102,7 +102,7 @@ export default function HomePage() {
 
               <span>Size: </span>
               <div className="relative w-1/6">
-                <input type="number" inputMode="numeric" pattern="[0-9]*" className="border p-1 pr-4 w-full" value={form.shallow} onChange={e => setForm({ ...form, shallow: e.target.value })} 
+                <input type="number" inputMode="numeric" pattern="[0-9]*" className="border p-1 pr-4 w-full" value={form.length} onChange={e => setForm({ ...form, length: e.target.value })} 
                 onKeyDown={e => {
                   if (
                     !/[0-9]/.test(e.key) &&
@@ -116,7 +116,7 @@ export default function HomePage() {
               </div>
               <span>X</span>
               <div className="relative w-1/6">
-                <input type="number" inputMode="numeric" pattern="[0-9]*" className="border p-1 pr-4 w-full" value={form.deep} onChange={e => setForm({ ...form, deep: e.target.value })} 
+                <input type="number" inputMode="numeric" pattern="[0-9]*" className="border p-1 pr-4 w-full" value={form.width} onChange={e => setForm({ ...form, width: e.target.value })} 
                 onKeyDown={e => {
                   if (
                     !/[0-9]/.test(e.key) &&
