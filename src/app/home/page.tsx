@@ -11,7 +11,6 @@ function calculateGallons(pool: any) {
   return Math.round(length * width * avgDepth * 7.48); // 7.48 gallons per cubic foot
 }
 
-
 const chlorineSteps = [0, 1, 2, 3, 5, 7.5, 10];
 const chemicalFields = [
   { key: 'chlorine', label: 'Chlorine (Cl)', min: 0, max: 10, step: 1 },
@@ -94,14 +93,79 @@ export default function HomePage() {
   function PoolForm({ onSave, initial }: { onSave: (pool: any) => void; initial?: any }) {
     const [form, setForm] = useState(initial || { name: '', length: '', width: '', shallow: '', deep: '' });
     return (
-      <div className="p-4 border rounded bg-white shadow-md">
+      <div className="p-4 border rounded bg-white bg-opacity-80 shadow-md">
         <h3 className="font-bold mb-2">{initial ? 'Edit Pool' : 'Add New Pool'}</h3>
         <div className="space-y-2">
           <input className="border p-1 w-full" placeholder="Name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-          <input className="border p-1 w-full" placeholder="Length (ft)" value={form.length} onChange={e => setForm({ ...form, length: e.target.value })} />
-          <input className="border p-1 w-full" placeholder="Width (ft)" value={form.width} onChange={e => setForm({ ...form, width: e.target.value })} />
-          <input className="border p-1 w-full" placeholder="Shallow Depth (ft)" value={form.shallow} onChange={e => setForm({ ...form, shallow: e.target.value })} />
-          <input className="border p-1 w-full" placeholder="Deep Depth (ft)" value={form.deep} onChange={e => setForm({ ...form, deep: e.target.value })} />
+
+          <div className="flex items-center space-x-2">
+
+              <span>Size: </span>
+              <div className="relative w-1/6">
+                <input type="number" inputMode="numeric" pattern="[0-9]*" className="border p-1 pr-4 w-full" value={form.shallow} onChange={e => setForm({ ...form, shallow: e.target.value })} 
+                onKeyDown={e => {
+                  if (
+                    !/[0-9]/.test(e.key) &&
+                    !['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '.', '-'].includes(e.key)
+                  ) {
+                    e.preventDefault();
+                  }
+                }}
+                />
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">ft</span>
+              </div>
+              <span>X</span>
+              <div className="relative w-1/6">
+                <input type="number" inputMode="numeric" pattern="[0-9]*" className="border p-1 pr-4 w-full" value={form.deep} onChange={e => setForm({ ...form, deep: e.target.value })} 
+                onKeyDown={e => {
+                  if (
+                    !/[0-9]/.test(e.key) &&
+                    !['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '.', '-'].includes(e.key)
+                  ) {
+                    e.preventDefault();
+                  }
+                }}
+                />
+
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">ft</span>
+              </div>
+
+
+
+          </div>
+          <div className='flex items-center space-x-2'>
+            <span>Shallow End: </span>
+              <div className="relative w-1/7">
+                <input type="number" inputMode="numeric" className="border p-1 pr-5 w-full" value={form.shallow} 
+                onChange={e => setForm({ ...form, shallow: e.target.value })} 
+                onKeyDown={e => {
+                  if (
+                    !/[0-9]/.test(e.key) &&
+                    !['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '.', '-'].includes(e.key)
+                  ) {
+                    e.preventDefault();
+                  }
+                }}/>
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">ft</span>
+              </div>
+              <span>Deep End:</span>
+              <div className="relative w-1/7">
+                <input type="number" inputMode="numeric" className="border p-1 pr-4 w-full" value={form.deep} onChange={e => setForm({ ...form, deep: e.target.value })} 
+                  onKeyDown={e => {
+                  if (
+                    !/[0-9]/.test(e.key) &&
+                    !['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '.', '-'].includes(e.key)
+                  ) {
+                    e.preventDefault();
+                  }
+                }}
+                />
+                
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">ft</span>
+              </div>
+          </div>
+
+
           <button className="bg-blue-500 text-white px-3 py-1 rounded" onClick={() => onSave(form)}>{initial ? 'Save' : 'Add'}</button>
         </div>
       </div>
