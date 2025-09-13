@@ -196,7 +196,7 @@ export default function HomePage() {
   }
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-blue-100">
+    <main className="flex flex-col items-center justify-center min-h-screen">
       <h1 className="text-3xl font-bold mb-6 text-gray-800">Pool Chemical Calculator</h1>
       {/* Pool Selector Dropdown */}
       <div className="mb-8 w-full max-w-xl mx-auto">
@@ -250,18 +250,18 @@ export default function HomePage() {
         </div>
         {/* Add/Edit Pool Modal */}
         {showAddPool && (
-          <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
             <div className="relative rounded-lg p-6 w-full max-w-md mx-auto">
               <PoolForm onSave={handleAddPool} />
-              <button className="absolute top-3 left-3 bg-red-200 px-3 py-1 rounded-lg shadow" onClick={() => setShowAddPool(false)}>Close</button>
+              <button className="absolute top-2 left-3 bg-red-200 px-3 py-1 rounded-lg shadow hover:bg-red-400" onClick={() => setShowAddPool(false)}>Close</button>
             </div>
           </div>
         )}
         {editIdx !== null && (
-          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <div className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
+          <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
+            <div className="relative rounded-lg p-6 w-full max-w-md mx-auto">
               <PoolForm initial={pools[editIdx]} onSave={handleEditPool} />
-              <button className="absolute top-4 right-4 bg-gray-200 px-3 py-2 rounded-lg shadow" onClick={() => setEditIdx(null)}>Close</button>
+              <button className="absolute top-2 left-3 bg-red-200 px-3 py-1 rounded-lg shadow hover:bg-red-400" onClick={() => setEditIdx(null)}>Close</button>
             </div>
           </div>
         )}
@@ -396,6 +396,7 @@ export default function HomePage() {
             height: 40px;
             border-radius: 50%;
             background: #3b82f6;
+            
             cursor: pointer;
             position: relative;
             /* Center thumb vertically in Safari */
