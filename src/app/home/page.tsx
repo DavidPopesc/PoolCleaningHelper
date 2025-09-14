@@ -72,7 +72,9 @@ export default function HomePage() {
     fetchPools();
   }, []); 
 
-// chemCalc(label, current[label as keyof typeof current], ideal[label as keyof typeof ideal])
+
+  const selectedGallons = pools[selectedPoolIdx ?? 0]?.gallons;
+  // chemCalc(label, current[label as keyof typeof current], ideal[label as keyof typeof ideal])
   const chemCalc = (key: string, label: string, currentLevel: number, idealLevel: number, poolGallons: number) => {
     // const currentLevel = current[label as keyof typeof current];
     // const idealLevel = ideal[label as keyof typeof ideal];
@@ -120,7 +122,7 @@ export default function HomePage() {
     if (key == "salt") {
       return (
         <p key={key} >{label}: {
-          diff > 0 ? `Add ${((13 / 8000) * (poolGallons / 200) * (diff / 1) * (1 / 40)).toFixed(2)} bags of salt` : 'same current and ideal levels'
+          diff > 0 ? `Add ${((13 / 8000) * (poolGallons / 200) * (diff / 1) * (1 / 40)).toFixed(2)} bags of salt` : 'drain pool or wait for dilution from rain'
           }</p>
       );
     }
@@ -152,93 +154,210 @@ export default function HomePage() {
 
   // For demo: Add/Edit pool UI is basic
   function PoolForm({ onSave, initial }: { onSave: (pool: any) => void; initial?: any }) {
-    const [form, setForm] = useState(initial || { name: '', length: '', width: '', shallow: '', deep: '' });
+  const [form, setForm] = useState(initial || { name: '', length: '', width: '', shallow: '', deep: '', gallons: '' });
+  const [manualGallons, setManualGallons] = useState(false);
+  const [showGallonsOnly, setShowGallonsOnly] = useState(false);
+
+    // Calculate gallons if not in manual mode
+    const calculatedGallons = (!manualGallons && form.length && form.width && form.shallow && form.deep)
+      ? Math.round(Number(form.length) * Number(form.width) * ((Number(form.shallow) + Number(form.deep)) / 2) * 7.48)
+      : '';
+
+    // If user types in gallons, switch to manual mode (but don't erase dimensions)
+    function handleGallonsChange(e: React.ChangeEvent<HTMLInputElement>) {
+      setManualGallons(true);
+      setForm({ ...form, gallons: e.target.value });
+    }
+
+    function handleGallonsBlur() {
+      // If gallons is empty, restore dimension fields
+      if (!form.gallons || form.gallons === '') {
+        setManualGallons(false);
+        setShowGallonsOnly(false);
+      }
+    }
+
+    // If user types in any dimension, switch to auto mode (but don't erase gallons)
+    function handleDimensionChange(field: string, value: string) {
+      setManualGallons(false);
+      setForm({ ...form, [field]: value });
+    }
+
     return (
       <div className="p-4 border rounded bg-white bg-opacity-80 shadow-md">
         <h3 className="font-bold mb-2">{initial ? 'Edit Pool' : 'Add New Pool'}</h3>
         <div className="space-y-2">
           <input className="border p-1 w-full" placeholder="Name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
 
-          <div className="flex items-center space-x-2">
+          {/* Show dimensions and calculated gallons unless in gallons-only mode */}
+          {!showGallonsOnly && (
+            <>
+              {/* Only show dimensions if not in manual gallons mode */}
+              {!manualGallons && (
+                <>
+                  <div className="flex items-center space-x-2">
+                    <span>Size: </span>
+                    <div className="relative w-1/6">
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        className="border p-1 pr-4 w-full"
+                        value={form.length}
+                        onChange={e => handleDimensionChange('length', e.target.value)}
+                        onKeyDown={e => {
+                          if (
+                            !/[0-9]/.test(e.key) &&
+                            !['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '.', '-'].includes(e.key)
+                          ) {
+                            e.preventDefault();
+                          }
+                        }}
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">ft</span>
+                    </div>
+                    <span>X</span>
+                    <div className="relative w-1/6">
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        className="border p-1 pr-4 w-full"
+                        value={form.width}
+                        onChange={e => handleDimensionChange('width', e.target.value)}
+                        onKeyDown={e => {
+                          if (
+                            !/[0-9]/.test(e.key) &&
+                            !['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '.', '-'].includes(e.key)
+                          ) {
+                            e.preventDefault();
+                          }
+                        }}
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">ft</span>
+                    </div>
+                  </div>
+                  <div className='flex items-center space-x-2'>
+                    <span>Shallow End: </span>
+                    <div className="relative w-1/7">
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        className="border p-1 pr-5 w-full"
+                        value={form.shallow}
+                        onChange={e => handleDimensionChange('shallow', e.target.value)}
+                        onKeyDown={e => {
+                          if (
+                            !/[0-9]/.test(e.key) &&
+                            !['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '.', '-'].includes(e.key)
+                          ) {
+                            e.preventDefault();
+                          }
+                        }}
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">ft</span>
+                    </div>
+                    <span>Deep End:</span>
+                    <div className="relative w-1/7">
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        className="border p-1 pr-4 w-full"
+                        value={form.deep}
+                        onChange={e => handleDimensionChange('deep', e.target.value)}
+                        onKeyDown={e => {
+                          if (
+                            !/[0-9]/.test(e.key) &&
+                            !['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '.', '-'].includes(e.key)
+                          ) {
+                            e.preventDefault();
+                          }
+                        }}
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">ft</span>
+                    </div>
+                  </div>
+                </>
+              )}
+              {/* Calculated gallons display and manual button */}
+              <div className="flex items-center space-x-2 mt-2">
+                <span>Calculated gallons: <span className="font-semibold">{calculatedGallons || '--'}</span></span>
+              </div>
+              <div className="flex items-center mt-2">
+                <button
+                  type="button"
+                  className="bg-gray-200 px-2 py-1 rounded text-blue-700 hover:bg-blue-100 border border-blue-300"
+                  onClick={() => { setShowGallonsOnly(true); setManualGallons(true); }}
+                >Manually Add Gallons</button>
+              </div>
+            </>
+          )}
 
-              <span>Size: </span>
-              <div className="relative w-1/6">
-                <input type="number" inputMode="numeric" pattern="[0-9]*" className="border p-1 pr-4 w-full" value={form.length} onChange={e => setForm({ ...form, length: e.target.value })} 
-                onKeyDown={e => {
-                  if (
-                    !/[0-9]/.test(e.key) &&
-                    !['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '.', '-'].includes(e.key)
-                  ) {
-                    e.preventDefault();
-                  }
-                }}
+          {/* Gallons input only view */}
+          {showGallonsOnly && (
+            <div className="flex flex-col items-start space-y-2">
+              <label className="mb-1">Manual gallons entry:</label>
+              <div className='relative w-full'>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  className="border p-1 pr-10 w-full bg-gray-100 text-gray-500 focus:bg-gray-200 focus:text-gray-700"
+                  placeholder="Gallons"
+                  value={form.gallons}
+                  onChange={handleGallonsChange}
+                  onBlur={handleGallonsBlur}
+                  style={{ opacity: 0.8 }}
                 />
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">ft</span>
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">gal</span>
               </div>
-              <span>X</span>
-              <div className="relative w-1/6">
-                <input type="number" inputMode="numeric" pattern="[0-9]*" className="border p-1 pr-4 w-full" value={form.width} onChange={e => setForm({ ...form, width: e.target.value })} 
-                onKeyDown={e => {
-                  if (
-                    !/[0-9]/.test(e.key) &&
-                    !['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '.', '-'].includes(e.key)
-                  ) {
-                    e.preventDefault();
-                  }
-                }}
-                />
+              <button
+                type="button"
+                className="bg-gray-200 px-2 py-1 rounded text-blue-700 hover:bg-blue-100 border border-blue-300 mt-2"
+                  onClick={() => {
+                    setShowGallonsOnly(false);
+                    setManualGallons(false);
+                  }}
+              >Go to Gallons Calculator</button>
+            </div>
+          )}
 
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">ft</span>
-              </div>
-
-
-
-          </div>
-          <div className='flex items-center space-x-2'>
-            <span>Shallow End: </span>
-              <div className="relative w-1/7">
-                <input type="number" inputMode="numeric" className="border p-1 pr-5 w-full" value={form.shallow} 
-                onChange={e => setForm({ ...form, shallow: e.target.value })} 
-                onKeyDown={e => {
-                  if (
-                    !/[0-9]/.test(e.key) &&
-                    !['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '.', '-'].includes(e.key)
-                  ) {
-                    e.preventDefault();
-                  }
-                }}/>
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">ft</span>
-              </div>
-              <span>Deep End:</span>
-              <div className="relative w-1/7">
-                <input type="number" inputMode="numeric" className="border p-1 pr-4 w-full" value={form.deep} onChange={e => setForm({ ...form, deep: e.target.value })} 
-                  onKeyDown={e => {
-                  if (
-                    !/[0-9]/.test(e.key) &&
-                    !['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '.', '-'].includes(e.key)
-                  ) {
-                    e.preventDefault();
-                  }
-                }}
-                />
-                
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">ft</span>
-              </div>
-          </div>
-
-
-          <button className="bg-blue-500 text-white px-3 py-1 rounded" onClick={() => onSave(form)}>{initial ? 'Save' : 'Add'}</button>
+          <button className="bg-blue-500 text-white px-3 py-1 rounded mt-4" onClick={() => {
+            let poolToSave = { ...form };
+            if (showGallonsOnly) {
+              // Save manual gallons
+              poolToSave.gallons = form.gallons;
+            } else {
+              // Save calculated gallons
+              poolToSave.gallons = calculatedGallons || '';
+            }
+            onSave(poolToSave);
+          }}>{initial ? 'Save' : 'Add'}</button>
         </div>
       </div>
     );
   }
 
   async function handleAddPool(pool: any) {
-    const newPools = [...pools, pool];
+    // Always update gallons before saving
+    let poolToSave = { ...pool };
+    if (!poolToSave.name || poolToSave.name.trim() === '') {
+      poolToSave.name = 'Unnamed Pool';
+    }
+    if (!poolToSave.gallons || poolToSave.gallons === '') {
+      const length = Number(poolToSave.length) || 0;
+      const width = Number(poolToSave.width) || 0;
+      const shallow = Number(poolToSave.shallow) || 0;
+      const deep = Number(poolToSave.deep) || 0;
+      if (length && width && shallow && deep) {
+        const avgDepth = (shallow + deep) / 2;
+        poolToSave.gallons = Math.round(length * width * avgDepth * 7.48);
+      }
+    }
+    const newPools = [...pools, poolToSave];
     await fetch('/api/pooldata', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pool }),
+      body: JSON.stringify({ pool: poolToSave }),
     });
     setPools(newPools);
     setShowAddPool(false);
@@ -246,10 +365,25 @@ export default function HomePage() {
 
   async function handleEditPool(pool: any) {
     if (editIdx === null) return;
-    const newPools = pools.map((p, i) => (i === editIdx ? pool : p));
+    // Always update gallons before saving
+    let poolToSave = { ...pool };
+    if (!poolToSave.name || poolToSave.name.trim() === '') {
+      poolToSave.name = 'Unnamed Pool';
+    }
+    if (!poolToSave.gallons || poolToSave.gallons === '') {
+      const length = Number(poolToSave.length) || 0;
+      const width = Number(poolToSave.width) || 0;
+      const shallow = Number(poolToSave.shallow) || 0;
+      const deep = Number(poolToSave.deep) || 0;
+      if (length && width && shallow && deep) {
+        const avgDepth = (shallow + deep) / 2;
+        poolToSave.gallons = Math.round(length * width * avgDepth * 7.48);
+      }
+    }
+    const newPools = pools.map((p, i) => (i === editIdx ? poolToSave : p));
     await fetch('/api/pooldata', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' }, 
       body: JSON.stringify({ pool: null, pools: newPools }),
     });
     setPools(newPools);
@@ -271,7 +405,7 @@ export default function HomePage() {
             {pools.map((pool, idx) => (
               pool && pool.name ? (
                 <option key={idx} value={idx}>
-                  {pool.name}, {calculateGallons(pool)} gallons
+                  {pool.name}, {pool.gallons} gallons
                 </option>
               ) : null
             ))}
@@ -452,7 +586,7 @@ export default function HomePage() {
                 <li key={key}>
                   {/* edge case (you shouldn't be seeing this) */}
                   {/* {label}: {diff > 0 ? `Add ${diff}` : `Remove ${Math.abs(diff)}`} */}
-                  {chemCalc(key, label, current[key as keyof typeof current], ideal[key as keyof typeof ideal], calculateGallons(pools[selectedPoolIdx ?? 0]))}
+                  {chemCalc(key, label, current[key as keyof typeof current], ideal[key as keyof typeof ideal], selectedGallons)}
                 </li>
               );
             })}
