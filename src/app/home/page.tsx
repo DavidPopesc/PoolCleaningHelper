@@ -342,7 +342,7 @@ export default function HomePage() {
 
   async function handleAddPool(pool: any) {
     // Always update gallons before saving
-    let poolToSave = { ...pool };
+    const poolToSave = { ...pool };
     if (!poolToSave.name || poolToSave.name.trim() === '') {
       poolToSave.name = 'Unnamed Pool';
     }
@@ -369,7 +369,7 @@ export default function HomePage() {
   async function handleEditPool(pool: any) {
     if (editIdx === null) return;
     // Always update gallons before saving
-    let poolToSave = { ...pool };
+    const poolToSave = { ...pool };
     if (!poolToSave.name || poolToSave.name.trim() === '') {
       poolToSave.name = 'Unnamed Pool';
     }
