@@ -330,7 +330,9 @@ export default function HomePage() {
               // Save calculated gallons
               poolToSave.gallons = calculatedGallons || '';
             }
+
             onSave(poolToSave);
+            setSelectedPoolIdx(pools.length)
           }}>{initial ? 'Save' : 'Add'}</button>
         </div>
       </div>
@@ -401,7 +403,7 @@ export default function HomePage() {
             value={selectedPoolIdx ?? ''}
             onChange={e => setSelectedPoolIdx(e.target.value === '' ? null : Number(e.target.value))}
           >
-            <option value="">Select a pool...</option>
+            {/* <option value="">Select a pool...</option> */}
             {pools.map((pool, idx) => (
               pool && pool.name ? (
                 <option key={idx} value={idx}>
