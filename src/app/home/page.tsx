@@ -64,7 +64,28 @@ export default function HomePage() {
       setPools(data.poolData || []);
     }
     fetchPools();
-  }, []);
+  }, []); 
+
+// chemCalc(label, current[label as keyof typeof current], ideal[label as keyof typeof ideal])
+  const chemCalc = (key: string, label: string, currentLevel: number, idealLevel: number, poolGallons: number) => {
+    // const currentLevel = current[label as keyof typeof current];
+    // const idealLevel = ideal[label as keyof typeof ideal];
+    const diff = idealLevel - currentLevel;
+    console.log(poolGallons);
+    if (key == "chlorine") {
+      return (
+          <p key={key} >{label}: {diff > 0 ? `Add some shock` : `Don't add chlorine until you reach your ideal level`}</p>
+      );
+    }
+    if (key == "pH") {
+      return (
+        <p key={key} >{label}: {
+          diff < 0 ? `Add ${((.328125 / 1 ) * (-diff) * (poolGallons / 10000)).toFixed(2)} gallons of acid or ${((((.328125 / 1 ) * (-diff) * (poolGallons / 10000)) * (128 / 1) * ( 6.33 / 24))).toFixed(0)} seconds of pour` : 
+          diff > 0 ? `Add ${((30 / 10000) * (diff) * (poolGallons) * (6.33 / 24)).toFixed(0)} seconds of pouring pH Up` : 'same current and ideal levels'
+          }</p>
+      );
+    }
+  };
 
   function handleIdealChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = e.target;
@@ -379,11 +400,19 @@ export default function HomePage() {
               if (!currentTouched[key as keyof typeof currentTouched]) return null;
               const diff = ideal[key as keyof typeof ideal] - current[key as keyof typeof current];
               if (Math.abs(diff) < 0.01) return (
-                <li key={key} className="text-gray-500">{label}: No adjustment needed</li>
+                <li key={key} className="text-gray-500">{label}: Current and Ideal levels are the same</li>
               );
+              // if (label == "Chlorine (Cl)") {
+              //   return (
+              //     <li key={key} className="text-gray-500">{label}: {diff > 0 ? `Add some shock` : `Don't add chlorine until you reach your ideal level`}</li>
+              //   );
+              // }
+
               return (
                 <li key={key}>
-                  {label}: {diff > 0 ? `Add ${diff}` : `Remove ${Math.abs(diff)}`}
+                  {/* edge case (you shouldn't be seeing this) */}
+                  {/* {label}: {diff > 0 ? `Add ${diff}` : `Remove ${Math.abs(diff)}`} */}
+                  {chemCalc(key, label, current[key as keyof typeof current], ideal[key as keyof typeof ideal], calculateGallons(pools[selectedPoolIdx ?? 0]))}
                 </li>
               );
             })}
