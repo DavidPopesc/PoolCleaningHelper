@@ -85,6 +85,40 @@ export default function HomePage() {
           }</p>
       );
     }
+    if (key == "alkalinity") {
+      return (
+        <p key={key} >{label}: {
+          diff < 0 ? `Pour some acid, check your pH and adjust as needed` : 
+          diff > 0 ? `Add ${((1.5 / 10) * (poolGallons / 10000) * (diff / 1) * (16 / 25)).toFixed(2)} scoops of bicarb (using blue scooper)` : 'same current and ideal levels'
+          }</p>
+      );
+    }
+
+    if (key == "calcium") {
+      return (
+        <p key={key} >{label}: {
+          diff > 0 ? `Add ${((1 / 50) * (1.1 / 10) * (diff) * (poolGallons / 10000)).toFixed(2)} bags of Calcium` : 
+          diff < 0 ? `Drain some of the pool water if you badly need to lower. (brush first!)` : 'same current and ideal levels'
+          }</p>
+      );
+    }
+
+    if (key == "CYA") {
+      return (
+        <p key={key} >{label}: {
+          diff > 0 ? `Add ${((1 / 30) * (1 / 4000) * (poolGallons / 1) * (16 / 25) * (diff)).toFixed(2)} scoops of stabilizer granule` : 'stop using Chlorine tabs and wait for CYA to naturally drop, or drain some water if you badly need to lower level'
+          }</p>
+      );
+    }
+
+    if (key == "salt") {
+      return (
+        <p key={key} >{label}: {
+          diff > 0 ? `Add ${((13 / 8000) * (poolGallons / 200) * (diff / 1) * (1 / 40)).toFixed(2)} bags of salt` : 'same current and ideal levels'
+          }</p>
+      );
+    }
+
   };
 
   function handleIdealChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
