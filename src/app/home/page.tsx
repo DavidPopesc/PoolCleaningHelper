@@ -449,7 +449,9 @@ export default function HomePage() {
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm mx-auto flex flex-col items-center">
-              <h3 className="text-lg font-semibold mb-4">Are you sure you want to delete the pool {pools[selectedPoolIdx].name}?</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Are you sure you want to delete the pool {selectedPoolIdx !== null && pools[selectedPoolIdx] ? pools[selectedPoolIdx].name : ''}?
+              </h3>
               <div className="flex gap-4">
                 <button
                   className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
