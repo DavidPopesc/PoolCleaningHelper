@@ -62,6 +62,12 @@ export default function HomePage() {
       const res = await fetch('/api/pooldata');
       const data = await res.json();
       setPools(data.poolData || []);
+      const poolList = data.poolData || [];
+      setPools(poolList);
+      if (poolList.length === 0) {
+        setShowAddPool(true);
+      }
+
     }
     fetchPools();
   }, []); 
@@ -308,7 +314,7 @@ export default function HomePage() {
           <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
             <div className="relative rounded-lg p-6 w-full max-w-md mx-auto">
               <PoolForm onSave={handleAddPool} />
-              <button className="absolute top-2 left-3 bg-red-200 px-3 py-1 rounded-lg shadow hover:bg-red-400" onClick={() => setShowAddPool(false)}>Close</button>
+              {pools.length !== 0 && <button className="absolute top-2 left-3 bg-red-200 px-3 py-1 rounded-lg shadow hover:bg-red-400" onClick={() => setShowAddPool(false)}>Close</button>}
             </div>
           </div>
         )}
