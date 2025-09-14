@@ -323,7 +323,7 @@ export default function HomePage() {
           )}
 
           <button className="bg-blue-500 text-white px-3 py-1 rounded mt-4" onClick={() => {
-            let poolToSave = { ...form };
+            const poolToSave = { ...form };
             if (showGallonsOnly) {
               // Save manual gallons
               poolToSave.gallons = form.gallons;
