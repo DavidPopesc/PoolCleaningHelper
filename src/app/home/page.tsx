@@ -55,6 +55,7 @@ export default function HomePage() {
   const [selectedPoolIdx, setSelectedPoolIdx] = useState<number | null>(null);
   const [showAddPool, setShowAddPool] = useState(false);
   const [editIdx, setEditIdx] = useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Fetch pools from cookie
   useEffect(() => {
@@ -67,7 +68,7 @@ export default function HomePage() {
       if (poolList.length === 0) {
         setShowAddPool(true);
       }
-
+      setSelectedPoolIdx(poolList.length > 0 ? 0 : null);
     }
     fetchPools();
   }, []); 
@@ -437,13 +438,34 @@ export default function HomePage() {
           <button
             aria-label="Delete Pool"
             className={`bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow flex items-center justify-center${selectedPoolIdx === null ? ' opacity-50 cursor-not-allowed' : ''}`}
-            onClick={() => selectedPoolIdx !== null && handleDeletePool(selectedPoolIdx)}
+            onClick={() => selectedPoolIdx !== null && setShowDeleteConfirm(true)}
             disabled={selectedPoolIdx === null}
             style={{ width: 44, height: 44 }}
           >
             {/* Trash icon */}
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.5,4H16.86l-.69-2.06A1.37,1.37,0,0,0,14.87,1H10.13a1.37,1.37,0,0,0-1.3.94L8.14,4H4.5a.5.5,0,0,0,0,1h.34l1,17.59A1.45,1.45,0,0,0,7.2,24H17.8a1.45,1.45,0,0,0,1.41-1.41L20.16,5h.34a.5.5,0,0,0,0-1ZM9.77,2.26A.38.38,0,0,1,10.13,2h4.74a.38.38,0,0,1,.36.26L15.81,4H9.19Zm8.44,20.27a.45.45,0,0,1-.41.47H7.2a.45.45,0,0,1-.41-.47L5.84,5H19.16Z" /></svg>
           </button>
+        {/* Delete confirmation modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm mx-auto flex flex-col items-center">
+              <h3 className="text-lg font-semibold mb-4">Are you sure you want to delete the pool {pools[selectedPoolIdx].name}?</h3>
+              <div className="flex gap-4">
+                <button
+                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                  onClick={() => {
+                    if (selectedPoolIdx !== null) handleDeletePool(selectedPoolIdx);
+                    setShowDeleteConfirm(false);
+                  }}
+                >Delete</button>
+                <button
+                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
+                  onClick={() => setShowDeleteConfirm(false)}
+                >Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
         </div>
         {/* Add/Edit Pool Modal */}
         {showAddPool && (
